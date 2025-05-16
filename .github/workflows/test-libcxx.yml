@@ -2,6 +2,9 @@ name: Run libcxx/libcxxabi/libunwind tests
 on:
   workflow_dispatch:
     inputs:
+      llvm_version:
+        description: 'LLVM version'
+        type: string
       commit:
         description: 'Commit to extract from'
         type: string
@@ -17,18 +20,18 @@ on:
         options:
         - push
         - schedule
+        - workflow_dispatch
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
+      LLVM_VERSION: ${{inputs.llvm_version || steps.get-parameters.outputs.LLVM_VERSION}}
     steps:
       - name: Download build parameters
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
-          workflow_conclusion: success
           commit: ${{inputs.commit}}
           branch: ${{inputs.branch}}
           event: ${{inputs.pipeline_type}}
@@ -58,7 +61,6 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
-          workflow_conclusion: success
           commit: ${{inputs.commit}}
           branch: ${{inputs.branch}}
           event: ${{inputs.pipeline_type}}
