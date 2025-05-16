@@ -4,6 +4,11 @@ on:
     branches:
       - '**'
   pull_request:
+  workflow_dispatch:
+    inputs:
+      llvm_version:
+        type: string
+        required: false
   schedule:
     - cron: '0 0 * * *'
 
@@ -22,7 +27,7 @@ jobs:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     runs-on: ubuntu-latest
     outputs:
-      LLVM_VERSION: ${{steps.get-versions.outputs.LLVM_VERSION}}
+      LLVM_VERSION: ${{inputs.llvm_version || steps.get-versions.outputs.LLVM_VERSION}}
       MINGW_W64_VERSION: ${{steps.get-versions.outputs.MINGW_W64_VERSION}}
       PYTHON_VERSION_MINGW: ${{steps.get-versions.outputs.PYTHON_VERSION_MINGW}}
       TAG: ${{steps.get-tag.outputs.TAG}}
@@ -102,7 +107,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false && ((github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw'))
     needs: [linux, prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -187,7 +192,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false && ((github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw'))
     needs: [prepare]
     runs-on: macos-latest
     steps:
@@ -225,7 +230,7 @@ jobs:
   # environments). The binaries built here rely on the runtime libraries from
   # the host environment (libstdc++ or libc++).
   msys2:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false && ((github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw'))
     needs: [prepare]
     runs-on: windows-latest
     defaults:
@@ -377,7 +382,7 @@ jobs:
     # testing with the latest compiler instead of an older release).
     # Therefore, keep the test disabled by default; it's easy to enable
     # temporarily on a branch for testing.
-    if: false
+    if: true
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
